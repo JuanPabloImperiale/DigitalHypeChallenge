@@ -29,13 +29,11 @@ const decryptMessage = (encryptedMessage) => {
   };
 };
 
-const saveDecryptedMessage = async (decryptedMessage) => {
-  try {
-    const client = await MongoClient.connect(
-      "mongodb+srv://decryptApp:NlsTN0ZhSNhBJavl@cluster0.yfbi4l8.mongodb.net/test",
+const client = await MongoClient.connect(
+      "mongodb://root:123456789@localhost:27017/DecryptDigitalHype?authSource=admin",
       { useNewUrlParser: true, useUnifiedTopology: true }
     );
-    const db = client.db("decryptApp");
+    const db = client.db("DecryptDigitalHype");
     const collection = db.collection("decrypted_messages");
     await collection.insertOne(decryptedMessage);
     client.close();
