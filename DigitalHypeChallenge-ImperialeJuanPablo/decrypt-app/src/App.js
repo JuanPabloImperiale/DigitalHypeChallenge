@@ -1,33 +1,38 @@
 import React, { useState, useEffect } from "react";
 import Spinner from './Spinner';
-import axios from "axios";
 import "./App.css";
+import ApiService from "./ApiService";
 
-const urlApiBackend = "http://localhost:5000/decrypt"
+const encryptedMessageRegex = /^([^\d]+)0+([^\d]+)0+(\d+)$/;
 
 function App() {
   const [encryptedMessage, setEncryptedMessage] = useState("");
   const [decryptedMessage, setDecryptedMessage] = useState("");
+  const [error, setError] = useState("");
   const [isInputEmpty, setIsInputEmpty] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDecrypt = async () => {
     try {
-      setIsLoading(true)
-      const response = await axios.post(urlApiBackend, {
-        encryptedMessage,
-      });
-      setDecryptedMessage(response.data.decryptedMessage);
+      setIsLoading(true);
+      const decryptedMessage = await ApiService.decryptMessage(encryptedMessage);
+      setDecryptedMessage(decryptedMessage);
+      setError(""); 
     } catch (error) {
       console.error(error);
-    } finally{
-      setIsLoading(false)
+      setError("An error occurred trying connect to API. Please try again."); // Set error message
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    //validation for empty string in input, disable and enable button
-    setIsInputEmpty(encryptedMessage.trim() === "");
+    const isInputEmpty = encryptedMessage.trim() === "";
+  
+    // Validar el formato del mensaje con una expresión regular
+    const isValidFormat = encryptedMessageRegex.test(encryptedMessage);
+  
+    setIsInputEmpty(isInputEmpty || !isValidFormat);
   }, [encryptedMessage]);
 
   return (
@@ -48,7 +53,8 @@ function App() {
         >
           Decrypt
         </button>
-        {!isLoading && decryptedMessage && (
+        {error && <p className="error">{error}</p>}
+        {!error && !isLoading && decryptedMessage && (
          <div className="card">
          <h2 className="card-title">Decrypted Message:</h2>
          <div className="card-content">
